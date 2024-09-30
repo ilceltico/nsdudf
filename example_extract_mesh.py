@@ -10,7 +10,7 @@ from meshing import compute_pseudo_sdf, mesh_marching_cubes
 
 
 device = "cpu"
-resolution = 256
+resolution = 128
 
 
 def main():

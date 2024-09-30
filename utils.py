@@ -13,7 +13,7 @@ def get_query_points(bbox, N):
     return coords
 
 def load_model(model_path, device):
-    print(f"You are using the {device}. Loading model from {model_path}")
+    print(f"You are using {device}. Loading model from {model_path}")
     
     model = models.MLP([32,1024,1024,128], torch.nn.LeakyReLU)
     model.load_state_dict(torch.load(model_path, map_location=device))

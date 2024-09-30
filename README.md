@@ -31,6 +31,10 @@ python setup.py build_ext --inplace
 ## Usage
 A usage example is provided in the file `example_extract_mesh.py`, with hopefully enough comments to understand everything. Let me know if clarifications are needed!
 
+You can load our pre-trained weights, the same as in the paper with:
+```
+model = utils.load_model("model.pt", device)
+```
 The Pseudo-SDF is computed by calling
 ```
 pseudo_sdf = compute_pseudo_sdf(model, lambda query_points: udf_and_grad_f(query_points, object), n_grid_samples=resolution)
@@ -41,6 +45,8 @@ The output can be meshed using Marching Cubes, which we provide with a slight in
 ```
 mesh = mesh_marching_cubes(pseudo_sdf)
 ```
+
+Training code and integration with DualMesh-UDF coming soon.
 
 ## Bibtex
 If you find this work useful, please cite us!

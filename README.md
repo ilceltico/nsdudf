@@ -41,3 +41,17 @@ The output can be meshed using Marching Cubes, which we provide with a slight in
 ```
 mesh = mesh_marching_cubes(pseudo_sdf)
 ```
+
+## Bibtex
+If you find this work useful, please cite us!
+```
+@misc{stella2024neuralsurfacedetectionunsigned,
+      title={Neural Surface Detection for Unsigned Distance Fields}, 
+      author={Federico Stella and Nicolas Talabot and Hieu Le and Pascal Fua},
+      year={2024},
+      eprint={2407.18381},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2407.18381}, 
+}
+```

@@ -3,5 +3,4 @@ __pycache__/
 
 # Ignore Cython build outputs 
 *.so
-*.pyx
 build/

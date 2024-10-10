@@ -44,7 +44,7 @@ def main():
     gt_mesh.apply_transform(scale)
 
     # We can now extract the mesh
-    pseudo_sdf = compute_pseudo_sdf(model, lambda query_points: udf_and_grad_f(query_points, gt_mesh), n_grid_samples=resolution)
+    pseudo_sdf = compute_pseudo_sdf(model, lambda query_points: udf_and_grad_f(query_points, gt_mesh), n_grid_samples=resolution, batch_size=10000)
     mesh = mesh_marching_cubes(pseudo_sdf)
     
     # De-normalize the mesh to the original size

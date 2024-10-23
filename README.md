@@ -20,12 +20,14 @@ Setuptools
 Alternatively, you can find my Conda environment for macOS in [requirements_macos_conda.txt](requirements_macos_conda.txt), and my Pip package list for CUDA in [requirements_cuda_pip.txt](requirements_cuda_pip.txt). A GPU is not required to run the code, but of course it speeds up the execution.
 
 ### Step 2
-Compile the Cython implementation of Marching Cubes.
+Compile the Cython implementation of Marching Cubes if you intend to use it. Make sure to specify the path to your Numpy installation.
 ```
 cd custom_mc
 export CFLAGS="-I path_to_numpy/core/include/ $CFLAGS"
 python setup.py build_ext --inplace
 ```
+
+To use with DualMesh-UDF, see below.
 
 
 ## Usage

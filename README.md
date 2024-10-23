@@ -73,6 +73,13 @@ If you want to train your own network you will need a watertight dataset, becaus
 
 ## Integration with DualMesh-UDF
 
+### Install
+Follow the instructions in the README of DualMesh-UDF.
+
+ADD Car example
+
+Explain resolution
+
 
 ## Bibtex
 If you find this work useful, please cite us!

@@ -22,6 +22,11 @@ def load_model(model_path, device):
     model.eval()
     return model
 
+def normalize(v, dim=-1):
+    norm = torch.linalg.norm(v, axis=dim, keepdims=True)
+    norm[norm == 0] = 1
+    return v / norm
+
 def df_and_grad_to_input_cells(udf, grads, max_avg_distance=None, max_max_distance=None):
     """ Builds inputs cells for the network from the UDF and gradients, and filters out cells that are far from the surface. Each cell has 8 corners.
         Return a list of udf cell, a list of gradient cells, and a list of indices of the cells that are within the thresholds."""

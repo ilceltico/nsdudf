@@ -91,7 +91,8 @@ class GridDataset(torch.utils.data.Dataset):
         # udf = torch.abs(sdf)
         udf_grads = query_points - closest_points
         udf_grads = torch.Tensor(udf_grads)
-        udf_grads_normalized = udf_grads / torch.linalg.norm(udf_grads, axis=1).reshape(-1,1)
+        # udf_grads_normalized = udf_grads / torch.linalg.norm(udf_grads, axis=1).reshape(-1,1)
+        udf_grads_normalized = utils.normalize(udf_grads, dim=1).reshape(-1,1)
 
         sdf = sdf.reshape(self.grid_points, self.grid_points, self.grid_points)
 

@@ -4,6 +4,12 @@ import utils
 import sys
 sys.path.append("custom_mc")
 from _marching_cubes_lewiner import pseudosdf_mc_lewiner
+#Import DualMesh-UDF if present, otherwise skip
+try:
+    from DualMeshUDF.extract_mesh import extract_mesh_mod, extract_mesh
+except:
+    print("DualMesh-UDF not found. Skipping import.")
+    pass
 import time
 
 import torch
@@ -53,7 +59,8 @@ def compute_pseudo_sdf(model, udf_and_grad_f, n_grid_samples=128, batch_size=100
 
     with torch.no_grad():
 
-        pseudo_sdf = torch.zeros(shape + (8,))
+        # Default value for the pseudo-sdf is 1.0. This ensures that cells that are not near the mesh are not meshed, since their SDF is non-zero.
+        pseudo_sdf = torch.ones(shape + (8,))
 
         cell_size = 32 if use_grads else 8
 
@@ -115,3 +122,52 @@ def mesh_marching_cubes(pseudo_sdf):
     print(f"Done in: {time.time() - start} seconds")
 
     return mesh
+
+
+
+def mesh_dual_mesh_udf(pseudo_sdf, udf_f_dmudf, udf_grad_f_dmudf, batch_size=10000, device="cpu"):
+    depth = int(np.ceil(np.log2(pseudo_sdf.shape[0])))
+    grid_points = pseudo_sdf.shape[0] + 1
+    if (np.log2(pseudo_sdf.shape[0]) != depth):
+        raise ValueError("The pseudo-sdf must have a resolution that is a power of 2. This amounts to a grid resolution of 2^depth + 1.")
+
+    # Extract the mesh using the normal DualMesh-UDF, untuned.
+    mesh_v_orig, mesh_f_orig, _, _, _ = extract_mesh(udf_f_dmudf, udf_grad_f_dmudf, batch_size=batch_size, max_depth=depth)
+
+    # Now we extract the mesh using a "relaxed" version of DualMesh-UDF, to make sure we include as many faces as possible.
+    mesh_v, mesh_f, _, _, _ = extract_mesh_mod(udf_f_dmudf, udf_grad_f_dmudf, batch_size=batch_size, max_depth=depth)
+
+
+    torch_mesh_v = torch.Tensor(mesh_v).to(device)
+    #Get which cell each vertex belongs to
+    #TODO, for simplicity I'm not filtering vertices outside of the grid
+    #In fact, the spurious vertices we've added to the mesh cannot go out the grid because they are taken as cell centers, and those are the ones that the network should filter anyway
+    cell_indices = torch.floor(torch_mesh_v / (2.0 / (grid_points - 1)) + (grid_points-1)/2).int().to('cpu')
+
+    #To do so, set out of bounds cell_indices as grid_points,grid_points,grid_points
+    cell_indices[cell_indices < 0] = grid_points-1
+    cell_indices[cell_indices >= grid_points-1] = grid_points-1
+
+    # Define additional cells for the pseudo-SDF, out of the normal bounds, with additional 0 values for grid_points,grid_points,grid_points
+    # So that these vertices are not filtered out
+    current_pseudo_sdf = torch.zeros((grid_points,grid_points,grid_points,8))
+    current_pseudo_sdf[:-1,:-1,:-1] = torch.Tensor(pseudo_sdf).to(device)
+
+    #Get the pseudo-SDF for each cell index
+    cell_pseudo_sdf = current_pseudo_sdf[tuple(cell_indices.T)].unsqueeze(1).reshape(-1,8)
+
+    #Filter out faces that contain a vertex whose cell has a pseuso-SDF with no negative values (i.e. there are no predicted sign flips)
+    filtered_mesh_f_neural = mesh_f[torch.all(torch.any(cell_pseudo_sdf[mesh_f] <= 0, axis=2), axis=1)]
+    
+    # Merge the original and the neural meshes in trimesh
+    full_mesh_v = np.vstack((mesh_v, mesh_v_orig))
+    full_mesh_f = np.vstack((filtered_mesh_f_neural, mesh_f_orig + mesh_v.shape[0]))
+
+    pseudosdf_dmudf_mesh = trimesh.Trimesh(full_mesh_v, full_mesh_f)
+    #Remove duplicated faces
+    pseudosdf_dmudf_mesh.remove_duplicate_faces()
+
+    #Retrieve also the original DualMesh-UDF mesh
+    dmudf_mesh = trimesh.Trimesh(mesh_v_orig, mesh_f_orig)
+
+    return dmudf_mesh, pseudosdf_dmudf_mesh

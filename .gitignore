@@ -6,3 +6,6 @@ __pycache__/
 build/
 
 experiments/
+datasets/ABC
+datasets/abc_0000_obj_v00
+.vscode/

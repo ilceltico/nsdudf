@@ -1152,31 +1152,6 @@ def marching_cubes_pseudosdf(float[:, :, :, :] im not None,
 
                 if no_mask or mask[z, y, x]:
                     
-                    avg_cube_val = avg_cube(abs(im[z,y,x][0]), abs(im[z,y,x][1]), abs(im[z,y,x][2]), abs(im[z,y,x][3]), abs(im[z,y,x][4]), abs(im[z,y,x][5]), abs(im[z,y,x][6]), abs(im[z,y,x][7]))
-
-                    max_cube_val = max_cube(abs(im[z,y,x][0]), abs(im[z,y,x][1]), abs(im[z,y,x][2]), abs(im[z,y,x][3]), abs(im[z,y,x][4]), abs(im[z,y,x][5]), abs(im[z,y,x][6]), abs(im[z,y,x][7]))
-
-
-
-                    # if avg_cube_val < 1.05 * voxel_size * 2 and max_cube_val <= 1.74 * voxel_size * 2:
-
-
-                    
-                
-
-
-
-                    # v0 = np.sign(np.dot(base_vec, grads[z   ,y, x])) * im[z   ,y, x]
-                    # v1 = np.sign(np.dot(base_vec, grads[z   ,y, x_st])) * im[z   ,y, x_st]
-                    # v2 = np.sign(np.dot(base_vec, grads[z   ,y_st, x_st])) * im[z   ,y_st, x_st]
-                    # v3 = np.sign(np.dot(base_vec, grads[z   ,y_st, x])) * im[z   ,y_st, x]
-                    # v4 = np.sign(np.dot(base_vec, grads[z_st,y, x])) * im[z_st,y, x]
-                    # v5 = np.sign(np.dot(base_vec, grads[z_st,y, x_st])) * im[z_st,y, x_st]
-                    # v6 = np.sign(np.dot(base_vec, grads[z_st,y_st, x_st])) * im[z_st,y_st, x_st]
-                    # v7 = np.sign(np.dot(base_vec, grads[z_st,y_st, x])) * im[z_st,y_st, x]
-
-
-                    
                     cell.set_cube(0.0, x, y, z, st, im[z,y,x][0], im[z,y,x][1], im[z,y,x][2], im[z,y,x][3], im[z,y,x][4], im[z,y,x][5], im[z,y,x][6], im[z,y,x][7])
 
 

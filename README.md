@@ -38,16 +38,21 @@ In practice, you only need to do three things:
     model = utils.load_model("model.pt", device)
     ```
     These pre-trained weights are used for all the experiments in the paper (ablations obviously excluded).
-2. Compute the Pseudo-SDF by calling:
+2. Define the function `udf_and_grad_f`
+
+    You can find two examples in [example_extract_mesh.py](example_extract_mesh.py).
+
+    This function computes the UDF and the gradients for `N` input query points. Expected output shapes are `(N)` for the UDF and `(N,3)` for the gradients. 
+    
+    If possible, we suggest normalizing the mesh to a [-1,1] bounding box as shown in the example; it is not mandatory. 
+3. Compute the Pseudo-SDF by calling:
     ```
     pseudo_sdf = compute_pseudo_sdf(model, lambda query_points: udf_and_grad_f(query_points, object), n_grid_samples=resolution, batch_size=10000)
     ```
-    with the required resolution. 
-    
-    `udf_and_grad_f` is a function you should define, and for which you can find examples in the example file, which computes the UDF and the gradients for a wanted object (neural or not). If possible, we suggest normalizing the mesh to a [-1,1] bounding box as shown in the example; it is not mandatory. The batch size can be adjusted to avoid excessive memory usage.
+    with the required resolution. The batch size can be adjusted to avoid excessive memory usage.
 
     Note: the Pseudo-SDF has shape `(resolution-1, resolution-1, resolution-1, 8)`, because it contains a sign configuration for each grid cell. It is not a true SDF, hence the name. This means that SDF-based algorithms should be slightly modified to retrieve the signs correctly.
-3. Mesh the output.
+4. Mesh the output.
 
     The output can be meshed using Marching Cubes, which we provide with a slight interface modification to accept our Pseudo-SDF input. You can mesh it with a different algorithm and a corresponding interface modification.
     ```
@@ -63,15 +68,15 @@ pip install .
 ```
 
 ### Usage
+DualMesh-UDF requires two functions: one that extracts the UDF and one that extracts the UDF and the gradients. You can see examples in [example_extract_mesh.py](/example_extract_mesh.py).
+Then you can call:
 ```
 dmudf_mesh, pseudosdf_dmudf_mesh = mesh_dual_mesh_udf(pseudo_sdf, lambda query_points: udf_f_dmudf(query_points, gt_mesh), lambda query_points: udf_grad_f_dmudf(query_points, gt_mesh), batch_size=args.batch_size, device=args.device)
 
 ```
 The first mesh is extracted by the original DualMesh-UDF directly from the UDF. The second mesh is extracted using the information from the Pseudo-SDF.
 
-To use DualMesh-UDF you need to implement two function: one that extracts the UDF and one that extracts the UDF and the gradients. You can see examples in [example_extract_mesh.py](/example_extract_mesh.py).
-
-Note that DualMesh-UDF requires grid sample resolutions `2^k+1`, otherwise it won't work. E.g. 129, 257, 513.
+Note that DualMesh-UDF requires grid sample resolutions of `2^k+1`, otherwise it won't work. E.g. `129`, `257`, `513`.
 
 ## Training
 If you want to train your own network you will need a watertight dataset, because the SDF is needed as ground truth for the training. In the paper we used the first 80 shapes from the first chunk of ABC, which you can download [here](https://deep-geometry.github.io/abc-dataset/): 

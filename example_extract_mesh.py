@@ -101,7 +101,7 @@ def udf_and_grad_f(query_points, mesh):
     # IMPORTANT: the gradients point away from the surface.
     udf_grads = query_points - closest_points
     udf_grads = torch.Tensor(udf_grads)
-    udf_grads_normalized = utils.normalize(udf_grads, dim=1).reshape(-1,1)
+    udf_grads_normalized = utils.normalize(udf_grads, dim=1)
 
     # Some query points are exactly on the surface and can produce NaN gradients
     # The UDF gradient does not exist on the surface, so here we set it to zero.
@@ -113,7 +113,7 @@ def udf_and_grad_f(query_points, mesh):
 # Here is an example of the above function, but for neural UDFs.
 # For speed purposes, batching is IMPORTANT.
 import torch.nn.functional as F
-def udf_and_grad_neural_f(model, latent, query_points, max_batch=32**3):
+def udf_and_grad_f2(model, latent, query_points, max_batch=32**3):
     model.eval()
 
     # Prepare data
@@ -141,7 +141,9 @@ def udf_and_grad_neural_f(model, latent, query_points, max_batch=32**3):
 
 
 
-
+###################################
+########## DUALMESH-UDF ###########
+###################################
 
 # The following functions are used in the DualMesh-UDF code.
 # They are similar to the ones above, but they return the results in sligthly different formats.

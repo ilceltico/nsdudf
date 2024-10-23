@@ -26,7 +26,8 @@ def main():
     model = utils.load_model(args.model, args.device)
 
     # Now we need to define a function to extract the UDF and gradients
-    # Here we use a UDF computed from an ABC example object (validation set). It is object 00009484, the same shown in the paper.
+    # Here we use a UDF computed from an ABC example object (validation set). By default it is object 00009484, the same shown in the paper.
+    # You can use any other object, take a look at the `example_objects` folder for more examples.
 
     # We load the object
     gt_mesh = trimesh.load(args.object)
@@ -61,9 +62,10 @@ def main():
     if args.meshing_algo == "marching_cubes":
         mesh = mesh_marching_cubes(pseudo_sdf)
         
-        # De-normalize the mesh to the original size
+        # De-normalize the mesh to the original size, if needed/possible
         mesh = mesh.apply_transform(scale_matrix(max(gt_mesh_extents) / 1.99999))
         mesh = mesh.apply_translation(gt_mesh_bounds)
+
         mesh.export(f"extracted_mesh_{args.resolution}.obj")
 
         # The mesh can be postprocessed to fill small cracks, holes, smooth the surface, remove degenerate faces, etc.
@@ -145,8 +147,9 @@ def udf_and_grad_f2(model, latent, query_points, max_batch=32**3):
 ########## DUALMESH-UDF ###########
 ###################################
 
-# The following functions are used in the DualMesh-UDF code.
+# The following functions are examples used in the DualMesh-UDF code.
 # They are similar to the ones above, but they return the results in sligthly different formats.
+# Implement your own functions for your UDFs.
 def udf_f_dmudf(query_points, mesh):
     return np.sqrt(igl.point_mesh_squared_distance(query_points, mesh.vertices, mesh.faces)[0]).reshape(-1,1)
 

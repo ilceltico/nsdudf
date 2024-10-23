@@ -4,6 +4,13 @@
 
 Pytorch implementation of the ECCV 2024 paper "Neural Surface Detection for Unsigned Distance Fields", Federico Stella, Nicolas Talabot, Hieu Le, Pascal Fua. École Polytechnique Fédérale de Lausanne (EPFL), Switzerland.
 
+
+![](media/meshudf.png) | ![](media/ours_mc.png) | ![](media/dmudf.png) | ![](media/ours_dmudf.png)
+:---: | :---:| :---:| :---:
+[MeshUDF](https://arxiv.org/abs/2111.14549) | Ours + [Marching Cubes](https://dl.acm.org/doi/10.1145/37402.37422) | [DualMesh-UDF](https://arxiv.org/abs/2309.08878) | Ours + [DualMesh-UDF](https://arxiv.org/abs/2309.08878)
+
+*To output these models, run the example file with grid resolution 513 and with both meshing options.
+
 ## Installation
 ### Step 1
 For the code to work, you need:
@@ -76,7 +83,7 @@ Then you can call:
 dmudf_mesh, pseudosdf_dmudf_mesh = mesh_dual_mesh_udf(pseudo_sdf, lambda query_points: udf_f_dmudf(query_points, gt_mesh), lambda query_points: udf_grad_f_dmudf(query_points, gt_mesh), batch_size=args.batch_size, device=args.device)
 
 ```
-The first mesh is extracted by the original DualMesh-UDF directly from the UDF. The second mesh is extracted using the information from the Pseudo-SDF.
+The first mesh is extracted by the original DualMesh-UDF directly from the UDF. The second mesh is extracted using the information from the Pseudo-SDF. Try to mesh a ShapeNet Car to see the difference!
 
 Note that DualMesh-UDF requires grid sample resolutions of `2^k+1`, otherwise it won't work. E.g. `129`, `257`, `513`.
 

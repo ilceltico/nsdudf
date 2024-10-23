@@ -13,20 +13,27 @@ from core.meshing import compute_pseudo_sdf, mesh_marching_cubes, mesh_dual_mesh
 def main():
     #Parse arguments from command line
     parser = argparse.ArgumentParser(description='Extract a mesh from a UDF.')
-    parser.add_argument('--resolution', type=int, default=128, help='Number of grid samples per axies used to extract the mesh.')
+    parser.add_argument('--resolution', type=int, default=257, help='Number of grid samples per axies used to extract the mesh.')
     parser.add_argument('--batch_size', type=int, default=10000, help='Batch size for computing the UDF and gradients.')
-    parser.add_argument('--device', type=str, default="cpu", help='Device to use for computing the UDF and gradients.')
+    parser.add_argument('--device', type=str, default="cuda", help='Device to use for computing the UDF and gradients.')
     parser.add_argument('--model', type=str, default="model.pt", help='Path to the model file.')
-    parser.add_argument('--object', type=str, default="example_objects/abc_00009484.obj", help='Path to the object file.')
+    parser.add_argument('--object', type=str, default="example_objects/shapenet_cars_10247b51a42b41603ffe0e5069bf1eb5.obj", help='Path to the object file.')
     parser.add_argument('--meshing_algo', type=str, default="marching_cubes", help='Meshing algorithm to use. Options are "marching_cubes" and "dual_mesh_udf".')
 
     args = parser.parse_args()
+    # pretty print the arguments
+    print(args)
+
+    # If CUDA is not available, use CPU
+    if not torch.cuda.is_available():
+        print("CUDA not available. Using CPU.")
+        args.device = "cpu"
 
     # Load the model
     model = utils.load_model(args.model, args.device)
 
     # Now we need to define a function to extract the UDF and gradients
-    # Here we use a UDF computed from an ABC example object (validation set). By default it is object 00009484, the same shown in the paper.
+    # Here we use a UDF computed example object, by default it is a car from ShapeNet, the same used in the teaser.
     # You can use any other object, take a look at the `example_objects` folder for more examples.
 
     # We load the object

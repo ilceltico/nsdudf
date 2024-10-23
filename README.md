@@ -31,7 +31,7 @@ python setup.py build_ext --inplace
 ## Usage
 A runnable and fully commented usage example is provided in the file [example_extract_mesh.py](example_extract_mesh.py).
 
-In practice, you only need to do three things:
+In practice, you only need to do four things:
 
 1. Load our pre-trained weights, the same as in the paper, with:
     ```

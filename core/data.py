@@ -3,7 +3,7 @@ import torch
 import numpy as np
 import trimesh
 from trimesh.transformations import scale_matrix
-import utils
+import core.utils as utils
 import igl
 
 

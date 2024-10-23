@@ -5,8 +5,8 @@ import torch
 from trimesh.transformations import scale_matrix
 import argparse
 
-import utils
-from meshing import compute_pseudo_sdf, mesh_marching_cubes, mesh_dual_mesh_udf
+import core.utils as utils
+from core.meshing import compute_pseudo_sdf, mesh_marching_cubes, mesh_dual_mesh_udf
 
 
 
@@ -17,6 +17,8 @@ def main():
     parser.add_argument('--batch_size', type=int, default=10000, help='Batch size for computing the UDF and gradients.')
     parser.add_argument('--device', type=str, default="cpu", help='Device to use for computing the UDF and gradients.')
     parser.add_argument('--model', type=str, default="model.pt", help='Path to the model file.')
+    parser.add_argument('--object', type=str, default="example_objects/abc_00009484.obj", help='Path to the object file.')
+    parser.add_argument('--meshing_algo', type=str, default="marching_cubes", help='Meshing algorithm to use. Options are "marching_cubes" and "dual_mesh_udf".')
 
     args = parser.parse_args()
 
@@ -27,7 +29,7 @@ def main():
     # Here we use a UDF computed from an ABC example object (validation set). It is object 00009484, the same shown in the paper.
 
     # We load the object
-    gt_mesh = trimesh.load("00009484.obj")
+    gt_mesh = trimesh.load(args.object)
 
     # We remove non-mesh information
     if isinstance(gt_mesh, trimesh.Scene):
@@ -49,38 +51,44 @@ def main():
     scale = scale_matrix(1.99999 / max(gt_mesh_extents)) #Keeping 2.0 causes some faces to be exactly on the edge of the box, which is potentially problematic
     gt_mesh.apply_transform(scale)
 
-    # We can now extract the mesh
+
+    # Pseudo-SDF computation
     pseudo_sdf = compute_pseudo_sdf(model, lambda query_points: udf_and_grad_f(query_points, gt_mesh), n_grid_samples=args.resolution, batch_size=args.batch_size)
-    mesh = mesh_marching_cubes(pseudo_sdf)
-    
-    # De-normalize the mesh to the original size
-    mesh = mesh.apply_transform(scale_matrix(max(gt_mesh_extents) / 1.99999))
-    mesh = mesh.apply_translation(gt_mesh_bounds)
-    mesh.export(f"extracted_mesh_{args.resolution}.obj")
-
-    # The mesh can be postprocessed to fill small cracks, holes, smooth the surface, remove degenerate faces, etc.
-    # Results in the paper do not include any postprocessing.
-
-    # Example of simple postprocessing
-    # print("Postprocessing mesh...")
-    # mesh.fill_holes()
-    # mesh.update_faces(mesh.unique_faces())
-    # mesh.remove_unreferenced_vertices()
-    # mesh = trimesh.Trimesh(vertices=mesh.vertices, faces=mesh.faces, validate=True)
-    # mesh.export(f"extracted_mesh_{resolution}_postprocessed.obj")
 
 
-    # We can also extract the mesh using a modified version of DualMesh-UDF. We refer to the paper for more details.
-    # In short: we relax the parameters of DualMesh-UDF to allow for more triangles in the mesh, and filter out unwanted ones using our Pseudo-SDF.
-    # We also add triangles in cells where DualMesh-UDF fails but the Pseudo-SDF predicts a surface.
-    print("Extracting mesh using DualMesh-UDF...")
-    dmudf_mesh, pseudosdf_dmudf_mesh = mesh_dual_mesh_udf(pseudo_sdf, lambda query_points: udf_f_dmudf(query_points, gt_mesh), lambda query_points: udf_grad_f_dmudf(query_points, gt_mesh), batch_size=args.batch_size, device=args.device)
-    pseudosdf_dmudf_mesh = pseudosdf_dmudf_mesh.apply_transform(scale_matrix(max(gt_mesh_extents) / 1.99999))
-    pseudosdf_dmudf_mesh = pseudosdf_dmudf_mesh.apply_translation(gt_mesh_bounds)
-    dmudf_mesh = dmudf_mesh.apply_transform(scale_matrix(max(gt_mesh_extents) / 1.99999))
-    dmudf_mesh = dmudf_mesh.apply_translation(gt_mesh_bounds)
-    pseudosdf_dmudf_mesh.export(f"extracted_mesh_ours+dmudf_{args.resolution}.obj")
-    dmudf_mesh.export(f"extracted_mesh_dmudf_{args.resolution}.obj")
+    # We can now extract the mesh
+
+    if args.meshing_algo == "marching_cubes":
+        mesh = mesh_marching_cubes(pseudo_sdf)
+        
+        # De-normalize the mesh to the original size
+        mesh = mesh.apply_transform(scale_matrix(max(gt_mesh_extents) / 1.99999))
+        mesh = mesh.apply_translation(gt_mesh_bounds)
+        mesh.export(f"extracted_mesh_{args.resolution}.obj")
+
+        # The mesh can be postprocessed to fill small cracks, holes, smooth the surface, remove degenerate faces, etc.
+        # Results in the paper do not include any postprocessing.
+
+        # Example of simple postprocessing
+        print("Postprocessing mesh...")
+        mesh.fill_holes()
+        mesh.update_faces(mesh.unique_faces())
+        mesh.remove_unreferenced_vertices()
+        mesh = trimesh.Trimesh(vertices=mesh.vertices, faces=mesh.faces, validate=True)
+        mesh.export(f"extracted_mesh_{args.resolution}_postprocessed.obj")
+
+    if args.meshing_algo == "dual_mesh_udf":
+        # We can also extract the mesh using a modified version of DualMesh-UDF. We refer to the paper for more details.
+        # In short: we relax the parameters of DualMesh-UDF to allow for more triangles in the mesh, and filter out unwanted ones using our Pseudo-SDF.
+        # We also add triangles in cells where DualMesh-UDF fails but the Pseudo-SDF predicts a surface.
+        print("Extracting mesh using DualMesh-UDF...")
+        dmudf_mesh, pseudosdf_dmudf_mesh = mesh_dual_mesh_udf(pseudo_sdf, lambda query_points: udf_f_dmudf(query_points, gt_mesh), lambda query_points: udf_grad_f_dmudf(query_points, gt_mesh), batch_size=args.batch_size, device=args.device)
+        pseudosdf_dmudf_mesh = pseudosdf_dmudf_mesh.apply_transform(scale_matrix(max(gt_mesh_extents) / 1.99999))
+        pseudosdf_dmudf_mesh = pseudosdf_dmudf_mesh.apply_translation(gt_mesh_bounds)
+        dmudf_mesh = dmudf_mesh.apply_transform(scale_matrix(max(gt_mesh_extents) / 1.99999))
+        dmudf_mesh = dmudf_mesh.apply_translation(gt_mesh_bounds)
+        pseudosdf_dmudf_mesh.export(f"extracted_mesh_ours+dmudf_{args.resolution}.obj")
+        dmudf_mesh.export(f"extracted_mesh_dmudf_{args.resolution}.obj")
 
 
 

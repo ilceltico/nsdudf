@@ -1,5 +1,5 @@
 import torch
-import data
+import core.data as data
 from torch.utils.data import DataLoader
 import time
 import os

@@ -1,7 +1,7 @@
 import torch
-import data
+import core.data as data
 from torch.utils.data import DataLoader
-import models
+import core.models as models
 import time
 import numpy as np
 import trimesh

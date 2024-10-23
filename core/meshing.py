@@ -1,6 +1,6 @@
 
-from utils import get_query_points, df_and_grad_to_input_cells
-import utils
+from core.utils import get_query_points, df_and_grad_to_input_cells
+import core.utils as utils
 import sys
 sys.path.append("custom_mc")
 from _marching_cubes_lewiner import pseudosdf_mc_lewiner
@@ -129,7 +129,7 @@ def mesh_dual_mesh_udf(pseudo_sdf, udf_f_dmudf, udf_grad_f_dmudf, batch_size=100
     depth = int(np.ceil(np.log2(pseudo_sdf.shape[0])))
     grid_points = pseudo_sdf.shape[0] + 1
     if (np.log2(pseudo_sdf.shape[0]) != depth):
-        raise ValueError("The pseudo-sdf must have a resolution that is a power of 2. This amounts to a grid resolution of 2^depth + 1.")
+        raise ValueError("The pseudo-sdf must have a resolution that is a power of 2. This amounts to a grid resolution of 2^depth + 1. Try 129 or 257.")
 
     # Extract the mesh using the normal DualMesh-UDF, untuned.
     mesh_v_orig, mesh_f_orig, _, _, _ = extract_mesh(udf_f_dmudf, udf_grad_f_dmudf, batch_size=batch_size, max_depth=depth)

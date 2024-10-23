@@ -27,7 +27,7 @@ export CFLAGS="-I path_to_numpy/core/include/ $CFLAGS"
 python setup.py build_ext --inplace
 ```
 
-To use with DualMesh-UDF, see below.
+To use DualMesh-UDF, see below.
 
 
 ## Usage
@@ -99,10 +99,6 @@ If you want to train your own network you will need a watertight dataset, becaus
 
     There are many other command line arguments, which you can find inside the script. By default, it uses the same parameters as in the paper.
 
-
-
-
-ADD Car example
 
 
 ## Bibtex

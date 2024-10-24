@@ -77,8 +77,8 @@ def main():
     # Copy the training code to the save location for reproducibility
     os.makedirs(os.path.join(save_location, "code"), exist_ok=True)
     os.system(f"cp train.py {os.path.join(save_location, 'code')}")
-    os.system(f"cp data.py {os.path.join(save_location, 'code')}")
-    os.system(f"cp models.py {os.path.join(save_location, 'code')}")
+    # Copy also the core
+    os.system(f"cp -r core {os.path.join(save_location, 'code')}")
 
     if args.nograd:
         input_dims = 8

@@ -56,6 +56,7 @@ def compute_pseudo_sdf(model, udf_and_grad_f, n_grid_samples=128, batch_size=100
     max_avg_distance = 1.2 * voxel_size
     max_max_distance = 2.0 * voxel_size	
     udf_cells, grad_cells, indices = df_and_grad_to_input_cells(udf, grads, max_avg_distance, max_max_distance)
+    indices = indices.long()
 
     with torch.no_grad():
 

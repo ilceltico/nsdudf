@@ -141,7 +141,7 @@ def udf_and_grad_f2(udf_autodecoder, latent, query_points, max_batch=32**3):
         inputs = torch.cat([latent_rep[:len(xyz_subset)], xyz_subset], dim=-1)
 
         udf_sub = udf_autodecoder(inputs)
-        udf[i : i + max_batch] = udf_sub.squeeze(1).detach().cpu()
+        udf[i : i + max_batch] = udf_sub.squeeze(1).detach()
         udf_sub.sum().backward(retain_graph=True)
         angle = xyz_subset.grad.detach()
         # IMPORTANT: the gradients point away from the surface.

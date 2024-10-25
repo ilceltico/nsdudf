@@ -51,7 +51,8 @@ In practice, you only need to do four things:
 
     You can find two examples in [example_extract_mesh.py](example_extract_mesh.py).
 
-    This function computes the UDF and the gradients for `N` input query points. Expected output shapes are `(N)` for the UDF and `(N,3)` for the gradients. 
+    This function computes the UDF and the gradients for `N` input query points. Expected output shapes are `(N)` for the UDF and `(N,3)` for the gradients.
+    We suggest batching the function to avoid memory problems. 
     
     If possible, we suggest normalizing the mesh to a [-1,1] bounding box as shown in the example; it is not mandatory. 
 3. Compute the Pseudo-SDF by calling:

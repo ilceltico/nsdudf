@@ -92,6 +92,7 @@ def main():
         # We also add triangles in cells where DualMesh-UDF fails but the Pseudo-SDF predicts a surface.
         print("Extracting mesh using DualMesh-UDF...")
         dmudf_mesh, pseudosdf_dmudf_mesh = mesh_dual_mesh_udf(pseudo_sdf, lambda query_points: udf_f_dmudf(query_points, gt_mesh), lambda query_points: udf_grad_f_dmudf(query_points, gt_mesh), batch_size=args.batch_size, device=args.device)
+        
         pseudosdf_dmudf_mesh = pseudosdf_dmudf_mesh.apply_transform(scale_matrix(max(gt_mesh_extents) / 1.99999))
         pseudosdf_dmudf_mesh = pseudosdf_dmudf_mesh.apply_translation(gt_mesh_bounds)
         dmudf_mesh = dmudf_mesh.apply_transform(scale_matrix(max(gt_mesh_extents) / 1.99999))

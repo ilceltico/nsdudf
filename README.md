@@ -91,7 +91,7 @@ Note that DualMesh-UDF requires grid sample resolutions of `2^k+1`, otherwise it
 ## Training
 If you want to train your own network you will need a watertight dataset, because the SDF is needed as ground truth for the training. In the paper we used the first 80 shapes from the first chunk of ABC, which you can download [here](https://deep-geometry.github.io/abc-dataset/): 
 
-1. Pre-process the data to speed up the training phase. It should take less than 10 minutes and it does not require a GPU.
+1. Pre-process the data to speed up the training phase. It should take less than 10 minutes using our training split, and it does not require a GPU.
     ```
     create_dataset.py
     ```

@@ -119,11 +119,11 @@ def udf_and_grad_f(query_points, mesh):
     return udf, udf_grads_normalized
 
 
-# Here is an example of the above function, but for neural UDFs.
+# Here is an example of the above function, but for neural UDFs (udf_autodecoder in this example)
 # For speed purposes, batching is IMPORTANT.
 import torch.nn.functional as F
-def udf_and_grad_f2(model, latent, query_points, max_batch=32**3):
-    model.eval()
+def udf_and_grad_f2(udf_autodecoder, latent, query_points, max_batch=32**3):
+    udf_autodecoder.eval()
 
     # Prepare data
     xyz_all = query_points.view(-1, 3)
@@ -139,7 +139,7 @@ def udf_and_grad_f2(model, latent, query_points, max_batch=32**3):
         xyz_subset.requires_grad = True
         inputs = torch.cat([latent_rep[:len(xyz_subset)], xyz_subset], dim=-1)
 
-        udf_sub = model(inputs)
+        udf_sub = udf_autodecoder(inputs)
         udf[i : i + max_batch] = udf_sub.squeeze(1).detach().cpu()
         udf_sub.sum().backward(retain_graph=True)
         angle = xyz_subset.grad.detach()

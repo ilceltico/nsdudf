@@ -112,47 +112,49 @@ class GridDataset(torch.utils.data.Dataset):
         sdf_values = torch.zeros((8, length))
         udf_values = torch.zeros((8, length))
         grad_values = torch.zeros((8, length, 3))
-        if ((self.max_avg_distance is not None and self.max_max_distance is not None) or self.class_balanced_weights):
-            z_indices, y_indices, x_indices = np.unravel_index(np.arange(length), shape)
-            
-            sdf_values[0] = sdf[z_indices, y_indices, x_indices]
-            sdf_values[1] = sdf[z_indices, y_indices, x_indices + 1]
-            sdf_values[2] = sdf[z_indices, y_indices + 1, x_indices + 1]
-            sdf_values[3] = sdf[z_indices, y_indices + 1, x_indices]
-            sdf_values[4] = sdf[z_indices + 1, y_indices, x_indices]
-            sdf_values[5] = sdf[z_indices + 1, y_indices, x_indices + 1]
-            sdf_values[6] = sdf[z_indices + 1, y_indices + 1, x_indices + 1]
-            sdf_values[7] = sdf[z_indices + 1, y_indices + 1, x_indices]
+        
+        z_indices, y_indices, x_indices = np.unravel_index(np.arange(length), shape)
+        
+        sdf_values[0] = sdf[z_indices, y_indices, x_indices]
+        sdf_values[1] = sdf[z_indices, y_indices, x_indices + 1]
+        sdf_values[2] = sdf[z_indices, y_indices + 1, x_indices + 1]
+        sdf_values[3] = sdf[z_indices, y_indices + 1, x_indices]
+        sdf_values[4] = sdf[z_indices + 1, y_indices, x_indices]
+        sdf_values[5] = sdf[z_indices + 1, y_indices, x_indices + 1]
+        sdf_values[6] = sdf[z_indices + 1, y_indices + 1, x_indices + 1]
+        sdf_values[7] = sdf[z_indices + 1, y_indices + 1, x_indices]
 
-            grad_values[0] = udf_grads_normalized[z_indices, y_indices, x_indices]
-            grad_values[1] = udf_grads_normalized[z_indices, y_indices, x_indices + 1]
-            grad_values[2] = udf_grads_normalized[z_indices, y_indices + 1, x_indices + 1]
-            grad_values[3] = udf_grads_normalized[z_indices, y_indices + 1, x_indices]
-            grad_values[4] = udf_grads_normalized[z_indices + 1, y_indices, x_indices]
-            grad_values[5] = udf_grads_normalized[z_indices + 1, y_indices, x_indices + 1]
-            grad_values[6] = udf_grads_normalized[z_indices + 1, y_indices + 1, x_indices + 1]
-            grad_values[7] = udf_grads_normalized[z_indices + 1, y_indices + 1, x_indices]
+        grad_values[0] = udf_grads_normalized[z_indices, y_indices, x_indices]
+        grad_values[1] = udf_grads_normalized[z_indices, y_indices, x_indices + 1]
+        grad_values[2] = udf_grads_normalized[z_indices, y_indices + 1, x_indices + 1]
+        grad_values[3] = udf_grads_normalized[z_indices, y_indices + 1, x_indices]
+        grad_values[4] = udf_grads_normalized[z_indices + 1, y_indices, x_indices]
+        grad_values[5] = udf_grads_normalized[z_indices + 1, y_indices, x_indices + 1]
+        grad_values[6] = udf_grads_normalized[z_indices + 1, y_indices + 1, x_indices + 1]
+        grad_values[7] = udf_grads_normalized[z_indices + 1, y_indices + 1, x_indices]
 
-            udf_values = torch.abs(sdf_values)
+        udf_values = torch.abs(sdf_values)
+        
+        if ((self.max_avg_distance is not None and self.max_max_distance is not None)):
             within_thresholds = ((self.max_avg_distance is not None and self.max_max_distance is not None) and
                                 (udf_values.mean(dim=0) <= self.max_avg_distance) &
                                 (udf_values.max(dim=0).values <= self.max_max_distance))
-            
-            # Extract indices at which within_thresholds is True
-            indices = torch.nonzero(within_thresholds).squeeze(1).int()
-
-            reference_sdf_values = sdf_values[:, within_thresholds] * torch.sign(sdf_values[0, within_thresholds])
-            reference_sdf_values[reference_sdf_values < 0] = 0
-            reference_sdf_values[reference_sdf_values > 0] = 1
-            gt_one_hot_numbers = reference_sdf_values[1:,:].transpose(1,0).matmul(POWERS_OF_2.float()).int()
-
-            if self.class_balanced_weights:
-                #Count the different classes in gt_one_hot_numbers
-                class_weights = torch.bincount(gt_one_hot_numbers, minlength=128)
-                class_weights = 1. / class_weights
-                class_weights[torch.isinf(class_weights)] = 0
         else:
-            indices = torch.arange(0, length, 1)
+            within_thresholds = torch.ones(length, dtype=torch.bool)
+            
+        # Extract indices at which within_thresholds is True
+        indices = torch.nonzero(within_thresholds).squeeze(1).int()
+
+        reference_sdf_values = sdf_values[:, within_thresholds] * torch.sign(sdf_values[0, within_thresholds])
+        reference_sdf_values[reference_sdf_values < 0] = 0
+        reference_sdf_values[reference_sdf_values > 0] = 1
+        gt_one_hot_numbers = reference_sdf_values[1:,:].transpose(1,0).matmul(POWERS_OF_2.float()).int()
+
+        if self.class_balanced_weights:
+            #Count the different classes in gt_one_hot_numbers
+            class_weights = torch.bincount(gt_one_hot_numbers, minlength=128)
+            class_weights = 1. / class_weights
+            class_weights[torch.isinf(class_weights)] = 0
 
         # Creates the input tensor for the network
         inputs = torch.hstack((udf_values.permute(1,0), grad_values.permute(1,0,2).reshape(length,-1)))

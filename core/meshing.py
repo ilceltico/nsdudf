@@ -52,7 +52,7 @@ def compute_pseudo_sdf(model, udf_and_grad_f, n_grid_samples=128, batch_size=100
     voxel_size = 2.0 / (n_grid_samples - 1)
     # Limits the meshing distance using the cell's average and maximum distances. 
     # This speeds up the computation and reduces the number of unwanted triangles.
-    # The same thresholds are used in the training of the network.
+    # Similar thresholds are used in the training of the network.
     max_avg_distance = 1.2 * voxel_size
     max_max_distance = 2.0 * voxel_size	
     udf_cells, grad_cells, indices = df_and_grad_to_input_cells(udf, grads, max_avg_distance, max_max_distance)

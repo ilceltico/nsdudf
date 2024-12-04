@@ -112,13 +112,15 @@ If you want to train your own network you will need a watertight dataset, becaus
 ## Bibtex
 If you find this work useful, please cite us!
 ```
-@misc{stella2024neuralsurfacedetectionunsigned,
-      title={Neural Surface Detection for Unsigned Distance Fields}, 
-      author={Federico Stella and Nicolas Talabot and Hieu Le and Pascal Fua},
-      year={2024},
-      eprint={2407.18381},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2407.18381}, 
+@InProceedings{stella2024nsdudf,
+    author="Stella, Federico and Talabot, Nicolas and Le, Hieu and Fua, Pascal",
+    title="Neural Surface Detection for Unsigned Distance Fields",
+    booktitle="European Conference on Computer Vision",
+    year="2024",
+    publisher="Springer",
+    pages="394--409",
+    isbn="978-3-031-73636-0"
 }
+
+
 ```

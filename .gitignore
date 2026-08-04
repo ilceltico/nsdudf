@@ -4,6 +4,10 @@ __pycache__/
 # Ignore Cython build outputs 
 *.so
 build/
+*.egg-info/
+
+# Cython 生成的 C++ 中间文件（由 .pyx 编译生成，重新编译会变化，勿提交）
+custom_mc/*.cpp
 
 experiments/
 datasets/ABC
@@ -11,3 +15,4 @@ datasets/abc_0000_obj_v00
 .vscode/
 
 extracted_mesh_*
+output/

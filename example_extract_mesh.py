@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from trimesh.transformations import scale_matrix
 import argparse
+from pathlib import Path
 
 import core.utils as utils
 from core.meshing import compute_pseudo_sdf, mesh_marching_cubes, mesh_dual_mesh_udf
@@ -19,10 +20,14 @@ def main():
     parser.add_argument('--model', type=str, default="model.pt", help='Path to the model file.')
     parser.add_argument('--object', type=str, default="example_objects/shapenet_cars_10247b51a42b41603ffe0e5069bf1eb5.obj", help='Path to the object file.')
     parser.add_argument('--meshing_algo', type=str, default="marching_cubes", help='Meshing algorithm to use. Options are "marching_cubes" and "dual_mesh_udf".')
+    parser.add_argument('--output_dir', type=str, default="output", help='Directory where extracted meshes are saved.')
 
     args = parser.parse_args()
     # pretty print the arguments
     print(args)
+
+    output_dir = Path(args.output_dir).expanduser()
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     # If CUDA is not available, use CPU
     if not torch.cuda.is_available():
@@ -73,7 +78,7 @@ def main():
         mesh = mesh.apply_transform(scale_matrix(max(gt_mesh_extents) / 1.99999))
         mesh = mesh.apply_translation(gt_mesh_bounds)
 
-        mesh.export(f"extracted_mesh_{args.resolution}.obj")
+        mesh.export(str(output_dir / f"extracted_mesh_{args.resolution}.obj"))
 
         # The mesh can be postprocessed to fill small cracks, holes, smooth the surface, remove degenerate faces, etc.
         # Results in the paper do not include any postprocessing.
@@ -84,7 +89,7 @@ def main():
         mesh.update_faces(mesh.unique_faces())
         mesh.remove_unreferenced_vertices()
         mesh = trimesh.Trimesh(vertices=mesh.vertices, faces=mesh.faces, validate=True)
-        mesh.export(f"extracted_mesh_{args.resolution}_postprocessed.obj")
+        mesh.export(str(output_dir / f"extracted_mesh_{args.resolution}_postprocessed.obj"))
 
     if args.meshing_algo == "dual_mesh_udf":
         # We can also extract the mesh using a modified version of DualMesh-UDF. We refer to the paper for more details.
@@ -97,8 +102,8 @@ def main():
         pseudosdf_dmudf_mesh = pseudosdf_dmudf_mesh.apply_translation(gt_mesh_bounds)
         dmudf_mesh = dmudf_mesh.apply_transform(scale_matrix(max(gt_mesh_extents) / 1.99999))
         dmudf_mesh = dmudf_mesh.apply_translation(gt_mesh_bounds)
-        pseudosdf_dmudf_mesh.export(f"extracted_mesh_ours+dmudf_{args.resolution}.obj")
-        dmudf_mesh.export(f"extracted_mesh_dmudf_{args.resolution}.obj")
+        pseudosdf_dmudf_mesh.export(str(output_dir / f"extracted_mesh_ours+dmudf_{args.resolution}.obj"))
+        dmudf_mesh.export(str(output_dir / f"extracted_mesh_dmudf_{args.resolution}.obj"))
 
 
 

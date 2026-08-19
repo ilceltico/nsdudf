@@ -14,7 +14,7 @@ from core.meshing import compute_pseudo_sdf, mesh_marching_cubes, mesh_dual_mesh
 def main():
     #Parse arguments from command line
     parser = argparse.ArgumentParser(description='Extract a mesh from a UDF.')
-    parser.add_argument('--resolution', type=int, default=257, help='Number of grid samples per axies used to extract the mesh.')
+    parser.add_argument('--resolution', type=int, default=257, help='Number of grid samples per axis used to extract the mesh.')
     parser.add_argument('--batch_size', type=int, default=10000, help='Batch size for computing the UDF and gradients.')
     parser.add_argument('--device', type=str, default="cuda", help='Device to use for computing the UDF and gradients.')
     parser.add_argument('--model', type=str, default="model.pt", help='Path to the model file.')

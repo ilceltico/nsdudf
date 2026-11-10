@@ -109,6 +109,10 @@ If you want to train your own network you will need a watertight dataset, becaus
 
 
 
+## License
+
+The original project code is licensed under the [GNU General Public License version 3](LICENSE) or any later version (GPL-3.0-or-later). Third-party components retain their respective licenses.
+
 ## Bibtex
 If you find this work useful, please cite us!
 ```
